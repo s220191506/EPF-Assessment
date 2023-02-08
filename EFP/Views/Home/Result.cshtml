@@ -1,0 +1,112 @@
+﻿@model CustomerViewModel
+<div>
+    <h2>Results</h2>
+    <table class="table table-borderless">
+        <tbody>
+            <tr>
+                <td>First Name:</td>
+                <td>@Model.Cust.FirstName.ToUpper()</td>
+            </tr>
+            <tr>
+                <td>Last Name:</td>
+                <td>@Model.Cust.LastName.ToUpper()</td>
+            </tr>
+            <tr>
+                <td>Date of birth:</td>
+                <td>@Model.Cust.DateOfBirth.ToShortDateString()</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<hr />
+<div>
+    <div class="mt-2">
+        <div class="pl-2 pr-2">
+            <canvas id="myStacked"></canvas>
+        </div>
+    </div>
+</div>
+<script src="~/lib/Chart.js/chart.umd.js"></script>
+<script>
+    const ctxStacked = document.getElementById('myStacked')
+    //setup
+    const DATA_COUNT = @Model.Finances.Count;
+    const NUMBER_CFG = { count: DATA_COUNT, min: 0, max: 100 };
+
+    const labels = [@{
+                foreach (var v in Model.Finances)
+                {
+                    @:'@v.Month',
+                }
+                }];
+    const data = {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Income',
+                data: [@{
+                        foreach (var v in Model.Finances)
+                    {
+                        @:@v.Income,
+                    }
+                    }],
+                backgroundColor: '#9BD0F5',
+            },
+            {
+                label: 'Expense',
+                data: [@{
+                        foreach (var v in Model.Finances)
+                    {
+                        @:@v.Expense,
+                    }
+                    }],
+                backgroundColor: '#FFB1C1',
+            }
+        ]
+    };
+    //actions
+    const actions = [
+        {
+            name: 'Randomize',
+            handler(chart) {
+                chart.data.datasets.forEach(dataset => {
+                    dataset.data = Utils.numbers({ count: chart.data.labels.length, min: -100, max: 100 });
+                });
+                chart.update();
+            }
+        },
+    ];
+    const stackedBar = new Chart(ctxStacked, {
+        type: 'bar',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: "@Model.Cust.FirstName's finances"
+                }
+            }
+        },
+    });
+    //config
+    const config = {
+        type: 'bar',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Customer finances'
+                }
+            }
+        },
+    };
+</script>
