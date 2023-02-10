@@ -17,11 +17,14 @@ namespace EFP.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private IWebHostEnvironment _hostingEnvironment;
+        private DefaultContext _context;
 
-        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment env)
+        public HomeController(ILogger<HomeController> logger, 
+            IWebHostEnvironment env, DefaultContext ctx)
         {
             _logger = logger;
             _hostingEnvironment = env;
+            _context = ctx;
         }
         [HttpGet]
         public IActionResult Index()
@@ -34,10 +37,34 @@ namespace EFP.Controllers
             IFormFile fl = this.HttpContext.Request.Form.Files[0];
             if (ModelState.IsValid && fl != null)
             {
+                
+                _context.Customers.Add(model);
+                _context.SaveChanges();
+                var user = _context.Customers
+                    .FirstOrDefault(x => x.FirstName == model.FirstName &&
+                    x.LastName == model.LastName && x.DateOfBirth == model.DateOfBirth);
+                byte[] fileBytes;
+                using ( var ms = new MemoryStream())
+                {
+                    fl.CopyTo(ms);
+                    fileBytes = ms.ToArray();
+                }
+                var uploadData = new Upload
+                {
+                    FileName = fl.FileName,
+                    DateUploaded = DateTime.Now,
+                    data = fileBytes,
+                    UserId = user.UserId
+                };
+                _context.Uploads.Add(uploadData);
+                _context.SaveChanges();
+                string uploads = Path.Combine(_hostingEnvironment.WebRootPath, "uploads");
+                string filePath = Path.Combine(uploads, fl.FileName);
                 var viewModel = new CustomerViewModel()
                 {
                     Cust = model,
-                    Finances = GetData(fl)
+                    Finances = GetData(fl),
+                    uploadPath = filePath
                 };
                 return View("Result", viewModel);
             }

@@ -16,6 +16,5 @@ namespace EFP.Models
         [Required(ErrorMessage = "Please enter your last name.")]
         public string LastName { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public FormFile File { get; set; }
     }
 }

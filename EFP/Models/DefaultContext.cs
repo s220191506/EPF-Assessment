@@ -11,5 +11,6 @@ namespace EFP.Models
         public DefaultContext(DbContextOptions<DefaultContext> options)
             : base(options) { }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<Upload> Uploads { get; set; }
     }
 }
